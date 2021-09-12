@@ -7,6 +7,9 @@
 #include <IRLibSendBase.h>    //We need the base code
 #include <IRLib_HashRaw.h>    //Only use raw sender
 #include <dht.h>
+#include <SoftwareSerial.h>
+SoftwareSerial mySerial(8,9);
+
 
 #define dht_apin A0 // Analog Pin sensor is connected to
  
@@ -17,10 +20,10 @@ IRsendRaw mySender;
 #define bLED 12
 void setup() {
   Serial.begin(9600);
+  mySerial.begin(9600);
   delay(200); 
 
-  pinMode(button,INPUT);
-  pinMode(bLED,OUTPUT);
+  Serial.println("remote is reday");
   
   while (!Serial); //delay for Leonardo
   Serial.println("DHT11 Humidity & temperature Sensor\n\n");
@@ -110,46 +113,40 @@ uint16_t rawDataOn[RAW_DATA_LEN]={
 //  566, 1682, 566, 1682, 566, 1682, 566, 1682, 
 //  566, 1678, 570, 1000};
 
-
-
-
 /*
  * Cut-and-paste into the area above.
- */
-int buttonState = 0;
- 
- int togglepin = 0;   
+ */ 
 void loop() {
 
 //  delay(10);
 //  DHT.read11(dht_apin);
 //  int temp = DHT.temperature;
-  Serial.print("temperature = ");
+//  Serial.print("temperature = ");
 //  Serial.print(temp); 
-  Serial.println(" C");
+//  Serial.println(" C");
 
-  buttonState = digitalRead(button);
-  Serial.println(buttonState);
-  if (buttonState == HIGH){
-    if( togglepin == 0){
-      togglepin = 2;
-    }else if(togglepin == -1){
-      togglepin = 1;
-    }
-  }
-  if (togglepin == 2) {
+  if(mySerial.available()>0){
+
+    int data = mySerial.read();
+    if(data == 79){
+      
+    Serial.println("ON"); 
     mySender.send(rawDataOn,RAW_DATA_LEN,36);//Pass the buffer,length, optionally frequency
     Serial.println(F("AC Switched On"));
-    togglepin = -1;
-    digitalWrite(bLED,HIGH);
-    delay(5);
+    delay(100);
+      }
+     else if(data == 70){
+        
+    Serial.println("OFF"); 
+     mySender.send(rawDataOff,RAW_DATA_LEN,36);//Pass the buffer,length, optionally frequency
+     Serial.println(F("AC Switched Off"));
+     delay(100);
+        
+      
+    }
+    else{
+      Serial.print("heh: ");
+      Serial.println(data);
+    }
   }
-  else if (togglepin == 1) {
-    mySender.send(rawDataOff,RAW_DATA_LEN,36);//Pass the buffer,length, optionally frequency
-    Serial.println(F("AC Switched Off"));
-    togglepin = 0;
-    digitalWrite(bLED,LOW);
-    delay(5);
-  }
-  
 }
