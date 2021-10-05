@@ -7,7 +7,10 @@
 // Recommend only use IRLibRecvPCI or IRLibRecvLoop for best results
 #include <IRLibRecvPCI.h> 
 
-IRrecvPCI myReceiver(2);//pin number for the receiver
+IRrecvPCI myReceiver(2);//pin number for the receiver  (PWM needed)
+
+// use pin 2 for arduino uno
+// use pin 0 for esp32
 
 void setup() {
   Serial.begin(9600);
